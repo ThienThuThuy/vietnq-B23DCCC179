@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button, Card, Input, Modal, Form, Row, Col } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
-import { Task, initialTasks } from "../../pages/TodoList/index";
+import { Task, initialTasks } from "../../services/Todolist/index";
 
 const TodoList: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -65,12 +65,19 @@ const TodoList: React.FC = () => {
     setTasks(updatedTasks);
     localStorage.setItem("tasks", JSON.stringify(updatedTasks));  // Cập nhật localStorage
   };
-
+  const handleDeleteAll = () => {
+    
+    setTasks([]);
+    localStorage.setItem("tasks", JSON.stringify([]));  // Cập nhật localStorage về rỗng
+  };
   return (
-    <div style={{ padding: 20 }}>
-      <h1 style={{ textAlign: "center" }}>Todo List</h1>
-      <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
+    <div style={{ padding: 20, backgroundColor: "#f0f8ff", textAlign: "center" }}>
+      <h1>Todo List</h1>
+      <Button danger icon={<PlusOutlined />} style={{ marginRight: 20 }} onClick={() => showModal()}>
         Create Task
+      </Button>
+      <Button danger icon={<PlusOutlined />} onClick={() => handleDeleteAll()}>
+        Delete All Task
       </Button>
       <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
         {Array.isArray(tasks) && tasks.map(task => (

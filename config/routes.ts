@@ -34,13 +34,13 @@
 		path: '/random-user',
 		name: 'RandomUser',
 		component: './RandomUser',
-		icon: 'ArrowsAltOutlined',
+		icon: 'FullscreenExitOutlined',
 	},
 	{
 		path: '/todo-list',
 		name: 'Todolist',
 		component: './TodoList',
-		icon: 'ArrowsAltOutlined',
+		icon: 'FullscreenExitOutlined',
 	},
 	// DANH MUC HE THONG
 	// {
