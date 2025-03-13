@@ -2,14 +2,18 @@ import React, { useState } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import { Card, Table, Button, Modal, Form, Input, Select, DatePicker, TimePicker, message, Rate, Tag } from 'antd';
 import { useModel } from 'umi';
-import moment from 'moment';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 
 const Appointments: React.FC = () => {
     const { appointments, setAppointments, services, staff, reviews, setReviews } = useModel('bookingSystem');
     const [visible, setVisible] = useState(false);
     const [form] = Form.useForm();
+    const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
 
+    const getDayOfWeek = (day: number) => {
+        const days = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+        return days[day] || 'Không xác định';
+    };
 
 
     const array = new Uint32Array(1);
@@ -17,92 +21,20 @@ const Appointments: React.FC = () => {
     const id = array[0].toString();
 
 
-    const checkAvailability = (values: any) => {
-        const date = values.date.format('YYYY-MM-DD');
-        const time = values.time.format('HH:mm');
-        const selectedStaff = staff.find((s) => s.id === values.staffId);
-
-
-
-
-
-
-        if (!selectedStaff) {
-            message.error('Không tìm thấy thông tin nhân viên!');
-            return false;
-        }
-
-        // 1. Kiểm tra ngày làm việc của nhân viên
-        const dayOfWeek = values.date.day(); // 0 = Chủ nhật, 1-6 = Thứ 2-7
-        const workingHour = selectedStaff.workingHours.find((wh) => wh.dayOfWeek === dayOfWeek);
-
-        if (!workingHour) {
-            message.error('Nhân viên không làm việc vào ngày này!');
-            return false;
-        }
-
-        // 2. Kiểm tra giờ làm việc
-        const appointmentTime = moment(time, 'HH:mm');
-        const startTime = moment(workingHour.startTime, 'HH:mm');
-        const endTime = moment(workingHour.endTime, 'HH:mm');
-
-        if (appointmentTime.isBefore(startTime) || appointmentTime.isAfter(endTime)) {
-            message.error('Thời gian đặt lịch nằm ngoài giờ làm việc của nhân viên!');
-            return false;
-        }
-
-        // 3. Kiểm tra số lượng khách trong ngày
-        const appointmentsInDay = appointments.filter(
-            (app) => app.staffId === values.staffId && app.date === date && ['pending', 'confirmed'].includes(app.status),
-        );
-
-        if (appointmentsInDay.length >= selectedStaff.maxCustomersPerDay) {
-            message.error('Nhân viên đã đạt số lượng khách tối đa trong ngày!');
-            return false;
-        }
-
-        // 4. Kiểm tra trùng lịch
-        const selectedService = services.find((s) => s.id === values.serviceId);
-        if (!selectedService) {
-            message.error('Không tìm thấy thông tin dịch vụ!');
-            return false;
-        }
-
-        const appointmentEndTime = moment(time, 'HH:mm').add(selectedService.duration, 'minutes');
-
-        const hasConflict = appointmentsInDay.some((app) => {
-            const existingAppointmentTime = moment(app.time, 'HH:mm');
-            const existingService = services.find((s) => s.id === app.serviceId);
-            if (!existingService) return false;
-
-            const existingAppointmentEndTime = moment(app.time, 'HH:mm').add(existingService.duration, 'minutes');
-
-            return (
-                appointmentTime.isBetween(existingAppointmentTime, existingAppointmentEndTime, undefined, '[)') ||
-                appointmentEndTime.isBetween(existingAppointmentTime, existingAppointmentEndTime, undefined, '(]') ||
-                existingAppointmentTime.isBetween(appointmentTime, appointmentEndTime, undefined, '[)') ||
-                existingAppointmentEndTime.isBetween(appointmentTime, appointmentEndTime, undefined, '(]')
-            );
-        });
-
-        if (hasConflict) {
-            message.error('Thời gian này đã có lịch hẹn khác!');
-            return false;
-        }
-
-        return true;
-    };
-
     const handleSubmit = async (values: any) => {
-        if (!checkAvailability(values)) {
-            return;
-        }
+        console.log('Form values:', values);
+
+        // Kiểm tra nếu `values.date` không tồn tại thì đặt giá trị mặc định
+        const formattedDate = values.date ? values.date.format('YYYY-MM-DD') : null;
+
+        // Tách `timeId` thành ngày, giờ bắt đầu, giờ kết thúc
+        const [dayOfWeek, startTime, endTime] = values.timeId.split('-');
 
         const newAppointment = {
             id: id,
             ...values,
-            date: values.date.format('YYYY-MM-DD'),
-            time: values.time.format('HH:mm'),
+            date: formattedDate,  // Dùng giá trị đã kiểm tra
+            time: `${startTime} - ${endTime}`,  // Lưu khoảng thời gian
             status: 'pending',
             createdAt: new Date().toISOString(),
         };
@@ -112,6 +44,7 @@ const Appointments: React.FC = () => {
         setVisible(false);
         form.resetFields();
     };
+
 
     const handleComplete = (record: any) => {
         setAppointments(appointments.map((app) => (app.id === record.id ? { ...app, status: 'completed' } : app)));
@@ -181,13 +114,23 @@ const Appointments: React.FC = () => {
             render: (staffId: string) => staff.find((s) => s.id === staffId)?.name,
         },
         {
-            title: 'Ngày',
-            dataIndex: 'date',
+            title: 'Thời gian',
+            dataIndex: 'timeId',
+            render: (timeId: string) => {
+                if (!timeId) return 'Chưa chọn thời gian';
+
+                // Tách `timeId` thành các phần
+                const [dayOfWeek, startTime, endTime] = timeId.split('-');
+
+                return (
+                    <div>
+                        <b>{getDayOfWeek(parseInt(dayOfWeek))}:</b> {startTime} - {endTime}
+                    </div>
+                );
+            },
         },
-        {
-            title: 'Giờ',
-            dataIndex: 'time',
-        },
+
+
         {
             title: 'Trạng thái',
             dataIndex: 'status',
@@ -206,12 +149,12 @@ const Appointments: React.FC = () => {
                 { text: 'Hoàn thành', value: 'completed' },
                 { text: 'Đã hủy', value: 'cancelled' },
             ],
-            onFilter: (value: string, record) => record.status === value,
+            onFilter: (value: string | number | boolean, record: IAppointment) => record.status === value,
         },
         {
             title: 'Thao tác',
             key: 'action',
-            render: (_, record) => {
+            render: (_: any, record: IAppointment) => {
                 const actions = [];
 
                 switch (record.status) {
@@ -308,7 +251,7 @@ const Appointments: React.FC = () => {
                     </Form.Item>
 
                     <Form.Item name='staffId' label='Nhân viên' rules={[{ required: true }]}>
-                        <Select>
+                        <Select onChange={(value) => setSelectedStaffId(value)}>
                             {staff.map((s) => (
                                 <Select.Option key={s.id} value={s.id}>
                                     {s.name}
@@ -317,12 +260,35 @@ const Appointments: React.FC = () => {
                         </Select>
                     </Form.Item>
 
-                    <Form.Item name='date' label='Ngày' rules={[{ required: true }]}>
-                        <DatePicker />
-                    </Form.Item>
 
-                    <Form.Item name='time' label='Giờ' rules={[{ required: true }]}>
-                        <TimePicker format='HH:mm' />
+
+                    <Form.Item name="timeId" label="Chọn thời gian" rules={[{ required: true }]} >
+                        <Select disabled={!selectedStaffId}>
+                            {staff.find((s) => s.id === selectedStaffId)
+                                ?.workingHours
+                                .filter((slot) => {
+
+                                    // Kiểm tra xem timeId trong appointments có khớp không
+                                    const isBooked = appointments.some((appointment) => {
+                                        return (
+                                            appointment.staffId === selectedStaffId
+                                            &&
+                                            ['pending', 'confirmed'].includes(appointment.status)
+                                        );
+                                    });
+
+                                    return !isBooked; // Chỉ giữ lại slot chưa đặt
+                                })
+                                .map((slot) => {
+                                    const timeKey = `${slot.dayOfWeek}-${slot.startTime}-${slot.endTime}`;
+                                    return (
+                                        <Select.Option key={timeKey} value={timeKey}>
+                                            {getDayOfWeek(slot.dayOfWeek)}: {slot.startTime} - {slot.endTime}
+                                        </Select.Option>
+                                    );
+                                }) || []
+                            }
+                        </Select>
                     </Form.Item>
                 </Form>
             </Modal>

@@ -84,10 +84,10 @@
 		icon: 'CalendarOutlined',
 		routes: [
 			{
-				path: 'services',
-				name: 'Quản lý dịch vụ',
-				component: './BookingSystem/Services',
-				icon: 'ShopOutlined',
+				path: 'appointments',
+				name: 'Quản lý lịch hẹn',
+				component: './BookingSystem/Appointments',
+				icon: 'ScheduleOutlined',
 			},
 			{
 				path: 'staff',
@@ -96,20 +96,26 @@
 				icon: 'TeamOutlined',
 			},
 			{
+				path: 'services',
+				name: 'Quản lý dịch vụ',
+				component: './BookingSystem/Services',
+				icon: 'ShopOutlined',
+			},
+			{
 				path: 'reviews',
 				name: 'Đánh giá',
 				component: './BookingSystem/Reviews',
 				icon: 'StarOutlined',
 			},
 			{
-				path: 'appointments',
-				name: 'Quản lý lịch hẹn',
-				component: './BookingSystem/Appointments',
-				icon: 'ScheduleOutlined',
+				path: 'statistics',
+				name: 'Thống kê',
+				component: './BookingSystem/Statistics',
+				icon: 'BarChartOutlined',
 			},
-
 		],
 	},
+
 	{
 		path: '/',
 	},

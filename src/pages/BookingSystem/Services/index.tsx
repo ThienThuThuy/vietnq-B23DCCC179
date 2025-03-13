@@ -9,6 +9,9 @@ const Services: React.FC = () => {
     const [visible, setVisible] = useState(false);
     const [editingService, setEditingService] = useState<any>(null);
     const [form] = Form.useForm();
+
+
+
     const array = new Uint32Array(1);
     crypto.getRandomValues(array);
     const id = array[0].toString();
@@ -116,13 +119,12 @@ const Services: React.FC = () => {
                         <Form.Item name='price' label='Giá (VNĐ)' rules={[{ required: true, message: 'Vui lòng nhập giá!' }]}>
                             <InputNumber
                                 style={{ width: '100%' }}
-                                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={(value: string | undefined): 0 => {
-                                    return value ? 0 : 0;  // Trả về giá trị 0 như kiểu yêu cầu
-                                }}
+                                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} // Hiển thị số có dấu phẩy ngăn cách
+                                parser={(value) => value ? parseInt(value.replace(/,/g, ''), 10) : 0}  // Loại bỏ dấu phẩy và lấy số
                                 min={0}
                             />
                         </Form.Item>
+
                         <Form.Item
                             name='duration'
                             label='Thời gian thực hiện (phút)'
