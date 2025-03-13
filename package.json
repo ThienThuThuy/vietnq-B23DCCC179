@@ -74,13 +74,13 @@
     "moment-timezone": "^0.5.33",
     "oidc-client-ts": "^2.2.5",
     "path": "^0.12.7",
-    "react": "^17.0.0",
+    "react": "^19.0.0",
     "react-apexcharts": "^1.4.1",
     "react-beautiful-dnd": "^13.1.0",
     "react-big-calendar": "^0.35.0",
     "react-countup": "^6.4.2",
     "react-dev-inspector": "^1.1.1",
-    "react-dom": "^17.0.0",
+    "react-dom": "^19.0.0",
     "react-helmet-async": "^1.0.4",
     "react-highlight-words": "^0.18.0",
     "react-image-file-resizer": "^0.4.8",
@@ -100,6 +100,7 @@
     "tinymce": "^5.10.0",
     "umi": "~3.5.0",
     "umi-serve": "~1.9.10",
+    "uuid": "^11.1.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

@@ -79,6 +79,38 @@
 		hideInMenu: true,
 	},
 	{
+		path: '/booking-system',
+		name: 'Quản lý đặt lịch',
+		icon: 'CalendarOutlined',
+		routes: [
+			{
+				path: 'services',
+				name: 'Quản lý dịch vụ',
+				component: './BookingSystem/Services',
+				icon: 'ShopOutlined',
+			},
+			{
+				path: 'staff',
+				name: 'Quản lý nhân viên',
+				component: './BookingSystem/Staff',
+				icon: 'TeamOutlined',
+			},
+			{
+				path: 'reviews',
+				name: 'Đánh giá',
+				component: './BookingSystem/Reviews',
+				icon: 'StarOutlined',
+			},
+			{
+				path: 'appointments',
+				name: 'Quản lý lịch hẹn',
+				component: './BookingSystem/Appointments',
+				icon: 'ScheduleOutlined',
+			},
+
+		],
+	},
+	{
 		path: '/',
 	},
 	{
